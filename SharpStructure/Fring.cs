@@ -7,22 +7,22 @@ namespace SharpStructure
         private T[] _items;
         private int _size;
 
+        #region Properties
+
+        public bool IsEmpty => Length == -1;
+        public int Length { get; private set; }
+
+        #endregion
+
         #region Pointers
 
         //Stack
-        private int topOfStack;
 
         //Queue
         private int front;
 
         #endregion
 
-        #region Flags
-        public bool Stack { get;private set; }
-        public bool List { get;private set; }
-        public bool Queue { get;private set; }
-
-        #endregion
 
         #region Constructor
 
@@ -34,7 +34,7 @@ namespace SharpStructure
 
         public Fring(int size)
         {
-            this._size = size;
+            _size = size;
             Initalize();
         }
 
@@ -47,54 +47,75 @@ namespace SharpStructure
 
         #endregion
 
+        #region Configuration
+
+        public bool Resizable { get; set; }
+        public int MaxSize { get; set; }
+        public bool TrimEnd { get; set; }
+
+        #endregion
+
         private void Initalize()
         {
-           
             front = 0;
-            topOfStack = -1;//this is the back
-            List = true;
+            Length = -1; //this is the back
+            Resizable = true;
+            MaxSize = -1;
             _items = new T[_size];
         }
 
         private void Resize()
         {
-            Array.Resize(ref _items,_size+1);
+            if (!Resizable) throw new Exception("Size limit!");
+            if (MaxSize != -1)
+                if (MaxSize == _size)
+                {
+                    if (!TrimEnd)
+                        throw new Exception("Size limit!");
+                    Chop(); //trims it so resize doesn't matter
+                }
+
+            Array.Resize(ref _items, ++_size);
+        }
+
+        private void Chop(int index = 0)
+        {
+            //Expensive
+            for (var i = index; i < _size - 1; i++) _items[i] = _items[i + 1];
+
+            _size--;
         }
 
 
         #region Stack
 
         /// <summary>
-        /// Pushes one item in the array. Topofstack+1 and back +1 as well
+        ///     Pushes one item in the array. Topofstack+1 and back +1 as well
         /// </summary>
         /// <param name="item"></param>
         public void Push(T item)
         {
-            if (topOfStack + 1 >= _size)
-            {
-                Resize();
-            }
-            _items[++topOfStack] = item;
+            if (Length + 1 >= _size) Resize();
+            _items[++Length] = item;
         }
 
         /// <summary>
-        /// Removes last item pushed on stack and also from the queue[Not really]
+        ///     Removes last item pushed on stack and also from the queue[Not really]
         /// </summary>
         /// <returns>last item</returns>
         public T Pop()
         {
-            if (topOfStack == -1) throw new Exception("Stack is empty");
-            return _items[topOfStack--];
-           
+            if (Length == -1) throw new Exception("Stack is empty");
+            return _items[Length--];
         }
 
         /// <summary>
-        /// Removes nothing just shows the last item pushed
+        ///     Removes nothing just shows the last item pushed
         /// </summary>
         /// <returns></returns>
         public T Peek()
         {
-            return _items[topOfStack];
+            return _items[Length];
         }
 
         #endregion
@@ -103,36 +124,54 @@ namespace SharpStructure
 
         public void Enqueue(T item)
         {
-            if (topOfStack + 1 >= _size)
-            {
-                Resize();
-            }
+            if (Length + 1 >= _size) Resize();
 
-            _items[++topOfStack] = item;
-       
-
+            _items[++Length] = item;
         }
 
         public T Dequeue()
         {
-            if (topOfStack == -1) throw new Exception("Queue is empty");
-            return _items[topOfStack--];
-         
+            if (Length == -1) throw new Exception("Queue is empty");
+            return _items[Length--];
         }
 
         public T First()
         {
-          
             return _items[front];
-
         }
+
         public T Last()
         {
-
             return Peek();
-
         }
+
         #endregion
 
+        #region List
+
+        public void RemoveAtIndex(int index)
+        {
+            Chop(index);
+        }
+
+        public T GetAtIndex(int index)
+        {
+            if (index < 0 || index >= _size) throw new Exception("Invalid index");
+            return _items[index];
+        }
+
+        //TODO can be better
+        public void InsertAt(T item, int index)
+        {
+            Resize(); //increases size by one
+            var temp = _items; //Memory inefficient
+            for (var i = index; i < _size - 1; i++) _items[i + 1] = temp[i];
+            _items[index] = item;
+        }
+
+        #endregion
+
+
+     
     }
 }
