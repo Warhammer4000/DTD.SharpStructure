@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace SharpStructure
 {
-    public class Fring<T>
+    public class Fring<T>:IList<T>,IEqualityComparer<T>
     {
         private T[] _items;
         private int _size;
@@ -149,7 +151,7 @@ namespace SharpStructure
 
         #region List
 
-        public void RemoveAtIndex(int index)
+        private void RemoveAtIndex(int index)
         {
             Chop(index);
         }
@@ -161,7 +163,7 @@ namespace SharpStructure
         }
 
         //TODO can be better
-        public void InsertAt(T item, int index)
+        private void InsertAt(T item, int index)
         {
             Resize(); //increases size by one
             var temp = _items; //Memory inefficient
@@ -172,6 +174,109 @@ namespace SharpStructure
         #endregion
 
 
-     
+        public IEnumerator<T> GetEnumerator()
+        {
+            foreach (var item in _items)
+            {
+                if (item == null) break;
+
+                yield return item;
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+
+        public void Add(T item)
+        {
+            Push(item);
+        }
+
+        public void Clear()
+        {
+           Initalize();
+        }
+
+        public bool Contains(T item)
+        {
+            foreach (var data in _items)
+            {
+                if (data.Equals(item))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public void CopyTo(T[] array, int arrayIndex)
+        {
+            for (int i = arrayIndex; i < arrayIndex+_size; i++)
+            {
+                array[i] = _items[i - arrayIndex];
+            }
+            
+        }
+
+        public bool Remove(T item)
+        {
+            for (var index = 0; index < _items.Length; index++)
+            {
+                var data = _items[index];
+                if (!data.Equals(item)) continue;
+                RemoveAtIndex(index);
+                return true;
+            }
+
+            return false;
+        }
+
+        public int Count { get=>_size; }
+        public bool IsReadOnly { get; }
+        public int IndexOf(T item)
+        {
+            for (var index = 0; index < _items.Length; index++)
+            {
+                var dataItem = _items[index];
+                if (dataItem.Equals(item))
+                {
+                    return index;
+                }
+            }
+
+            return -1;
+        }
+
+        public void Insert(int index, T item)
+        {
+            InsertAt(item,index);
+        }
+
+        public void RemoveAt(int index)
+        {
+            RemoveAtIndex(index);
+        }
+
+        public T this[int index]
+        {
+            get => _items[index];
+            set => _items[index] = value;
+        }
+
+        public bool Equals(T x, T y)
+        {
+            
+            return !EqualityComparer<T>.Default.Equals(x, y);
+        }
+
+        public int GetHashCode(T obj)
+        {
+            return IndexOf(obj);
+
+        }
     }
 }
