@@ -11,8 +11,8 @@ namespace SharpStructure
 
         #region Properties
 
-        public bool IsEmpty => Length == -1;
-        public int Length { get; private set; }
+        public bool IsEmpty => TopOfStack == -1;
+        public int TopOfStack { get; private set; }
 
         #endregion
 
@@ -21,7 +21,7 @@ namespace SharpStructure
         //Stack
 
         //Queue
-        private int front;
+        private int _front;
 
         #endregion
 
@@ -59,11 +59,12 @@ namespace SharpStructure
 
         private void Initalize()
         {
-            front = 0;
-            Length = -1; //this is the back
+            _front = 0;
+            TopOfStack = -1; //this is the back
             Resizable = true;
             MaxSize = -1;
             _items = new T[_size];
+            
         }
 
         private void Resize()
@@ -97,8 +98,8 @@ namespace SharpStructure
         /// <param name="item"></param>
         public void Push(T item)
         {
-            if (Length + 1 >= _size) Resize();
-            _items[++Length] = item;
+            if (TopOfStack + 1 >= _size) Resize();
+            _items[++TopOfStack] = item;
         }
 
         /// <summary>
@@ -107,8 +108,8 @@ namespace SharpStructure
         /// <returns>last item</returns>
         public T Pop()
         {
-            if (Length == -1) throw new Exception("Stack is empty");
-            return _items[Length--];
+            if (TopOfStack == -1) throw new Exception("Stack is empty");
+            return _items[TopOfStack--];
         }
 
         /// <summary>
@@ -117,7 +118,7 @@ namespace SharpStructure
         /// <returns></returns>
         public T Peek()
         {
-            return _items[Length];
+            return _items[TopOfStack];
         }
 
         #endregion
@@ -126,20 +127,20 @@ namespace SharpStructure
 
         public void Enqueue(T item)
         {
-            if (Length + 1 >= _size) Resize();
+            if (TopOfStack + 1 >= _size) Resize();
 
-            _items[++Length] = item;
+            _items[++TopOfStack] = item;
         }
 
         public T Dequeue()
         {
-            if (Length == -1) throw new Exception("Queue is empty");
-            return _items[Length--];
+            if (TopOfStack == -1) throw new Exception("Queue is empty");
+            return _items[TopOfStack--];
         }
 
         public T First()
         {
-            return _items[front];
+            return _items[_front];
         }
 
         public T Last()
