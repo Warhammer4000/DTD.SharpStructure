@@ -52,6 +52,31 @@ namespace SharpStructure
             var node = ChildNodes.Find(r => r.Character == nextChar);
             return node != null && node.IsValidWord(word.Remove(0, 1));
         }
+
+        public List<string> GetWordsByPrefix(string prefix)
+        {
+            List<string> words=new List<string>();
+            WordNode lastNode = GetLastNodeOfWord(prefix);
+            foreach (WordNode nodeChild in lastNode.ChildNodes)
+            {
+                //TODO Finish implementation
+            }
+
+            return words;
+        }
+
+        private WordNode GetLastNodeOfWord(string word)
+        {
+            if (word.Length == 1)
+            {
+                return this;
+            }
+
+            var node = ChildNodes.Find(r => r.Character == word[0]);
+            return node.GetLastNodeOfWord(word.Remove(0, 1));
+        }
+
+
     }
 
     public class WordDictionary
@@ -74,5 +99,8 @@ namespace SharpStructure
             var wordNode = Root.ChildNodes.Find(r => r.Character == word[0]);
             return wordNode != null && wordNode.IsValidWord(word);
         }
+
+        
+
     }
 }
