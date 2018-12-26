@@ -17,11 +17,11 @@ namespace SharpStructure
         public WordNode(string characters)
         {
             ChildNodes = new List<WordNode>();
-            Initialize(characters);
+            Initialize(this,characters);
         }
 
 
-        public void Initialize(string characters)
+        public void Initialize(WordNode parentNode,string characters)
         {
             if (string.IsNullOrEmpty(characters)) return;
             var firstChar = characters[0];
@@ -30,17 +30,18 @@ namespace SharpStructure
             if (node == null)
             {
                 var newChild = new WordNode(characters.Remove(0, 1)) {Character = firstChar};
+                newChild.Parent = parentNode;
                 if (characters.Length == 1)
                 {
                     newChild.IsWord = true;
-                    newChild.Parent = this;
+                    
                 }
-
+                
                 ChildNodes.Add(newChild);
             }
             else
             {
-                node.Initialize(characters.Remove(0, 1));
+                node.Initialize(node,characters.Remove(0, 1));
             }
         }
 
@@ -56,24 +57,51 @@ namespace SharpStructure
         public List<string> GetWordsByPrefix(string prefix)
         {
             List<string> words=new List<string>();
-            WordNode lastNode = GetLastNodeOfWord(prefix);
-            foreach (WordNode nodeChild in lastNode.ChildNodes)
+            WordNode lastNode = GetLastNodeOfWord(this,prefix);
+            Stack<WordNode> nodes=new Stack<WordNode>();
+            nodes.Push(lastNode);
+
+            while (nodes.Count>0)
             {
-                //TODO Finish implementation
+                WordNode node = nodes.Pop();
+                foreach (WordNode childNode in node.ChildNodes)
+                {
+                    nodes.Push(childNode);
+                }
+
+                if (node.IsWord)
+                {
+                    string word = "";
+                    Stack<WordNode> wordsStack = new Stack<WordNode>();
+                    while (node.Parent!=null)
+                    {
+                   
+                        wordsStack.Push(node);
+                        node = node.Parent;
+                    }
+
+                    while (wordsStack.Count>0)
+                    {
+                        word += wordsStack.Pop().Character;
+                    }
+                    words.Add(word);
+                }
+
+                
             }
 
             return words;
         }
 
-        private WordNode GetLastNodeOfWord(string word)
+        private WordNode GetLastNodeOfWord(WordNode targetNode,string word)
         {
-            if (word.Length == 1)
+            if (word.Length == 0)
             {
-                return this;
+                return targetNode;
             }
 
-            var node = ChildNodes.Find(r => r.Character == word[0]);
-            return node.GetLastNodeOfWord(word.Remove(0, 1));
+            targetNode = targetNode.ChildNodes.Find(r => r.Character == word[0]);
+            return targetNode.GetLastNodeOfWord(targetNode,word.Remove(0, 1));
         }
 
 
@@ -90,7 +118,7 @@ namespace SharpStructure
 
         public void AddToDictionary(string word)
         {
-            Root.Initialize(word.ToUpper());
+            Root.Initialize(Root,word.ToUpper());
         }
 
         public bool IsValidWord(string word)
@@ -100,7 +128,10 @@ namespace SharpStructure
             return wordNode != null && wordNode.IsValidWord(word);
         }
 
-        
+        public List<string> GetByPrefix(string prefix)
+        {
+            return Root.GetWordsByPrefix(prefix.ToUpper());
+        }
 
     }
 }
